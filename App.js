@@ -17,7 +17,6 @@ import {
   TouchableWithoutFeedback,
   Animated,
   useWindowDimensions,
-  Easing,
 } from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {SwipeListView} from 'react-native-swipe-list-view';
@@ -81,14 +80,12 @@ const HiddenItemWithActions = props => {
     Animated.timing(rowAnimatedValues[rowKey].rowBackWidth, {
       toValue: Math.abs(swipeAnimatedValue.__getValue()),
       duration: 250,
-      easing: Easing.ease,
       useNativeDriver: false,
     }).start();
   } else {
     Animated.timing(rowAnimatedValues[rowKey].rowBackWidth, {
       toValue: 100,
       duration: 250,
-      easing: Easing.ease,
       useNativeDriver: false,
     }).start();
   }
@@ -230,13 +227,11 @@ const App = () => {
     Animated.timing(rowAnimatedValues[rowKey].rowFrontTranslate, {
       toValue: 0,
       duration: 200,
-      easing: Easing.ease,
       useNativeDriver: false,
     }).start();
     Animated.timing(rowAnimatedValues[rowKey].rowBackWidth, {
       toValue: screenWidth + 40,
       duration: 200,
-      easing: Easing.ease,
       useNativeDriver: false,
     }).start();
     Animated.timing(rowAnimatedValues[rowKey].rowHeight, {
