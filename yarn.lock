@@ -5351,6 +5351,11 @@
   "resolved" "https://registry.npmjs.org/react-native-eva-icons/-/react-native-eva-icons-1.3.1.tgz"
   "version" "1.3.1"
 
+"react-native-haptic-feedback@^1.11.0":
+  "integrity" "sha512-KTIy7lExwMtB6pOpCARyUzFj5EzYTh+A1GN/FB5Eb0LrW5C6hbb1kdj9K2/RHyZC+wyAJD1M823ZaDCU6n6cLA=="
+  "resolved" "https://registry.npmjs.org/react-native-haptic-feedback/-/react-native-haptic-feedback-1.11.0.tgz"
+  "version" "1.11.0"
+
 "react-native-svg@^12.1.0", "react-native-svg@^9.4.0":
   "integrity" "sha512-1g9qBRci7man8QsHoXn6tP3DhCDiypGgc6+AOWq+Sy+PmP6yiyf8VmvKuoqrPam/tf5x+ZaBT2KI0gl7bptZ7w=="
   "resolved" "https://registry.npmjs.org/react-native-svg/-/react-native-svg-12.1.0.tgz"
@@ -5364,7 +5369,7 @@
   "resolved" "https://registry.npmjs.org/react-native-swipe-list-view/-/react-native-swipe-list-view-3.2.6.tgz"
   "version" "3.2.6"
 
-"react-native@>=0.23.1", "react-native@>=0.50.0", "react-native@>=0.64.0-rc.0 || 0.0.0-*", "react-native@0.64.0":
+"react-native@>=0.23.1", "react-native@>=0.50.0", "react-native@>=0.60.0", "react-native@>=0.64.0-rc.0 || 0.0.0-*", "react-native@0.64.0":
   "integrity" "sha512-8dhSHBthgGwAjU+OjqUEA49229ThPMQH7URH0u8L0xoQFCnZO2sZ9Wc6KcbxI0x9KSmjCMFFZqRe3w3QsRv64g=="
   "resolved" "https://registry.yarnpkg.com/react-native/-/react-native-0.64.0.tgz"
   "version" "0.64.0"

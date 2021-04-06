@@ -22,17 +22,45 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import {Icon} from 'react-native-eva-icons';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
+const COLORS = {
+  red: '#cc0000',
+  green: '#4cA64c',
+  blue: '#4c4cff',
+  white: '#fff',
+  grey: '#ddd',
+};
+
+const hapticFeedbackOptions = {
+  enableVibrateFallback: true,
+  ignoreAndroidSystemSettings: false,
+};
 
 const VisibleItem = props => {
-  const {data, rowKey} = props;
+  const {data, screenWidth, rowKey} = props;
 
   return (
     <TouchableWithoutFeedback onPress={() => console.log('touched')}>
       <Animated.View
-        style={[styles.rowFront, {height: rowAnimatedValues[rowKey].height}]}>
-        <View>
-          <Text>{data.item.text}</Text>
-        </View>
+        style={[
+          styles.rowFront,
+          {
+            height: rowAnimatedValues[rowKey].rowHeight,
+            transform: [
+              {
+                translateX: rowAnimatedValues[
+                  rowKey
+                ].rowFrontTranslate.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-screenWidth, 0],
+                  extrapolate: 'clamp',
+                }),
+              },
+            ],
+          },
+        ]}>
+        <Text>{data.item.text}</Text>
       </Animated.View>
     </TouchableWithoutFeedback>
   );
@@ -49,14 +77,15 @@ const HiddenItemWithActions = props => {
   } = props;
 
   if (rightActionActivated) {
-    Animated.timing(rowAnimatedValues[rowKey].width, {
+    ReactNativeHapticFeedback.trigger('impactLight', hapticFeedbackOptions);
+    Animated.timing(rowAnimatedValues[rowKey].rowBackWidth, {
       toValue: Math.abs(swipeAnimatedValue.__getValue()),
       duration: 250,
       easing: Easing.ease,
       useNativeDriver: false,
     }).start();
   } else {
-    Animated.timing(rowAnimatedValues[rowKey].width, {
+    Animated.timing(rowAnimatedValues[rowKey].rowBackWidth, {
       toValue: 100,
       duration: 250,
       easing: Easing.ease,
@@ -66,11 +95,12 @@ const HiddenItemWithActions = props => {
 
   return (
     <Animated.View
-      style={[styles.rowBack, {height: rowAnimatedValues[rowKey].height}]}>
+      style={[styles.rowBack, {height: rowAnimatedValues[rowKey].rowHeight}]}>
       {!rightActionActivated && (
         <TouchableWithoutFeedback onPress={onClose}>
           <Animated.View
             style={[
+              styles.backBtn,
               styles.backLeftBtn,
               {
                 width: 100,
@@ -92,7 +122,7 @@ const HiddenItemWithActions = props => {
                 width={26}
                 height={26}
               />
-              <Text style={styles.backTextWhite}>Left</Text>
+              <Text style={styles.backBtnText}>Left</Text>
             </View>
           </Animated.View>
         </TouchableWithoutFeedback>
@@ -101,6 +131,7 @@ const HiddenItemWithActions = props => {
         <TouchableWithoutFeedback onPress={onClose}>
           <Animated.View
             style={[
+              styles.backBtn,
               styles.backRightBtn,
               styles.backRightBtnLeft,
               {
@@ -123,7 +154,7 @@ const HiddenItemWithActions = props => {
                 width={26}
                 height={26}
               />
-              <Text style={styles.backTextWhite}>Right</Text>
+              <Text style={styles.backBtnText}>Right</Text>
             </View>
           </Animated.View>
         </TouchableWithoutFeedback>
@@ -132,10 +163,11 @@ const HiddenItemWithActions = props => {
         <TouchableWithoutFeedback onPress={onDelete}>
           <Animated.View
             style={[
+              styles.backBtn,
               styles.backRightBtn,
               styles.backRightBtnRight,
               {
-                width: rowAnimatedValues[rowKey].width,
+                width: rowAnimatedValues[rowKey].rowBackWidth,
                 transform: [
                   {
                     translateX: swipeAnimatedValue.interpolate({
@@ -149,7 +181,7 @@ const HiddenItemWithActions = props => {
             ]}>
             <View style={styles.backBtnInner}>
               <Icon name="trash-2-outline" fill="#fff" width={26} height={26} />
-              <Text style={styles.btnText}>Delete</Text>
+              <Text style={styles.backBtnText}>Delete</Text>
             </View>
           </Animated.View>
         </TouchableWithoutFeedback>
@@ -163,8 +195,9 @@ Array(20)
   .fill('')
   .forEach((_, i) => {
     rowAnimatedValues[`${i}`] = {
-      height: new Animated.Value(60),
-      width: new Animated.Value(100),
+      rowHeight: new Animated.Value(60),
+      rowFrontTranslate: new Animated.Value(1),
+      rowBackWidth: new Animated.Value(100),
     };
   });
 
@@ -188,21 +221,30 @@ const App = () => {
     }
   };
 
-  const deleteRow = (rowMap, rowKey) => {
-    Animated.timing(rowAnimatedValues[rowKey].width, {
-      toValue: screenWidth,
+  const deleteRow = rowKey => {
+    const newData = list.filter(item => item.key !== rowKey);
+    setList(newData);
+  };
+
+  const onDelete = rowKey => {
+    Animated.timing(rowAnimatedValues[rowKey].rowFrontTranslate, {
+      toValue: 0,
       duration: 200,
+      easing: Easing.ease,
       useNativeDriver: false,
     }).start();
-    Animated.timing(rowAnimatedValues[rowKey].height, {
+    Animated.timing(rowAnimatedValues[rowKey].rowBackWidth, {
+      toValue: screenWidth + 40,
+      duration: 200,
+      easing: Easing.ease,
+      useNativeDriver: false,
+    }).start();
+    Animated.timing(rowAnimatedValues[rowKey].rowHeight, {
       toValue: 0,
       delay: 200,
       duration: 200,
       useNativeDriver: false,
-    }).start();
-
-    const newData = list.filter(item => item.key !== rowKey);
-    setList(newData);
+    }).start(() => deleteRow(rowKey));
   };
 
   const onRightActionStatusChange = rowKey => {
@@ -211,17 +253,17 @@ const App = () => {
 
   const swipeGestureEnded = (rowKey, data) => {
     if (data.translateX < -200) {
-      Animated.timing(rowAnimatedValues[rowKey].width, {
+      Animated.timing(rowAnimatedValues[rowKey].rowBackWidth, {
         toValue: screenWidth,
         duration: 200,
         useNativeDriver: false,
       }).start();
-      Animated.timing(rowAnimatedValues[rowKey].height, {
+      Animated.timing(rowAnimatedValues[rowKey].rowHeight, {
         toValue: 0,
         delay: 200,
         duration: 200,
         useNativeDriver: false,
-      }).start(() => deleteRow(null, rowKey));
+      }).start(() => deleteRow(rowKey));
     }
   };
 
@@ -230,7 +272,7 @@ const App = () => {
       <VisibleItem
         data={data}
         rowKey={data.item.key}
-        removeRow={() => deleteRow(rowMap, data.item.key)}
+        screenWidth={screenWidth}
       />
     );
   };
@@ -241,7 +283,7 @@ const App = () => {
       rowMap={rowMap}
       rowKey={data.item.key}
       onClose={() => closeRow(rowMap, data.item.key)}
-      onDelete={() => deleteRow(rowMap, data.item.key)}
+      onDelete={() => onDelete(data.item.key)}
     />
   );
 
@@ -270,53 +312,48 @@ const App = () => {
 
 const styles = StyleSheet.create({
   rowFront: {
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 60,
-    backgroundColor: '#fff',
-    borderBottomColor: '#ddd',
+    backgroundColor: COLORS.white,
+    borderBottomColor: COLORS.grey,
     borderBottomWidth: 1,
-  },
-  backTextWhite: {
-    color: '#fff',
   },
   rowBack: {
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  backLeftBtn: {
+  backBtn: {
     position: 'absolute',
     bottom: 0,
     top: 0,
-    alignItems: 'flex-end',
     justifyContent: 'center',
-    backgroundColor: 'grey',
+  },
+  backLeftBtn: {
+    alignItems: 'flex-end',
+    backgroundColor: COLORS.green,
     paddingRight: 16,
   },
   backRightBtn: {
-    position: 'absolute',
-    bottom: 0,
-    top: 0,
     right: 0,
     alignItems: 'flex-start',
-    justifyContent: 'center',
     paddingLeft: 12,
   },
   backRightBtnLeft: {
-    backgroundColor: 'blue',
+    backgroundColor: COLORS.blue,
   },
   backRightBtnRight: {
-    backgroundColor: 'red',
+    backgroundColor: COLORS.red,
   },
   backBtnInner: {
     alignItems: 'center',
   },
-  btnText: {
-    color: '#fff',
-    marginTop: 3,
+  backBtnText: {
+    color: COLORS.white,
+    marginTop: 2,
   },
 });
 
