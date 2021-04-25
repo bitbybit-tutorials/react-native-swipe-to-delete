@@ -294,7 +294,7 @@ const App = () => {
         stopLeftSwipe={100}
         stopRightSwipe={-201}
         rightActivationValue={-200}
-        rightActionValue={-500}
+        rightActionValue={-screenWidth}
         onRightActionStatusChange={onRightActionStatusChange}
         swipeGestureEnded={swipeGestureEnded}
         swipeToOpenPercent={10}
